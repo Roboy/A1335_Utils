@@ -1,5 +1,8 @@
 
 
+
+const uint8_t start_register = 0x20;
+
 /**
  * Content of the registers that should be on every chip
  * Starts on ANG register (0x20:21)
@@ -19,7 +22,7 @@ const byte expected_registers[][2] = {
  * 1 marks the bits that belong to the expected values
  * (to check the expected content)
  */
-const byte expected_registers_map[][2] = {
+const byte expected_registers_mask[][2] = {
   {0b11000000, 0b00000000}, // ANG: RIDC & EF
   {0b11110001, 0b11111111}, // STA: RIDC, Error & Status
   {0b11111100, 0b11111111}, // ERR: All except Interface & CRC Errors
