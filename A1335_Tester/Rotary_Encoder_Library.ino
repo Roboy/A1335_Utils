@@ -1,4 +1,3 @@
-#define FS(x) (__FlashStringHelper*)(x)
 
 
 bool readMemory(uint8_t deviceaddress, uint8_t eeaddress, byte* rdata, uint8_t num)
@@ -60,7 +59,10 @@ bool checkDefaultSettings(A1335State* state){
 
 bool readDeviceState(uint8_t deviceaddress, A1335State* state){
   
-  if(!readMemory(deviceaddress, start_register, state->rawData, 16)){
+  if(!readMemory(deviceaddress, start_register, state->rawData, num_registers)){
+    return false;
+  }
+  if(!readMemory(deviceaddress, start_register2, &state->rawData[num_registers], num_registers2)){
     return false;
   }
 
@@ -86,15 +88,15 @@ bool readDeviceState(uint8_t deviceaddress, A1335State* state){
 }
 
 
-void SerialPrintFlags(uint16_t flags, char meanings[][3], uint8_t num){
+void SerialPrintFlags(uint16_t flags, char meanings[][FLAGS_STRLEN], uint8_t num){
   bool first = true;
   for(uint8_t i = 0; i < num; i++){
-    if(!first){
-      Serial.print(", ");
-      first = false;
-    }
-    if((flags << i) & 1){
+    if((flags >> i) & 1){
+      if(!first){
+        Serial.print(", ");
+      }
       Serial.print(meanings[i]);
+      first = false;
     }
   }
 }

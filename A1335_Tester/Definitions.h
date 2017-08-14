@@ -1,4 +1,5 @@
 #include "Rotary_Encoder_Settings.h"
+#define FS(x) (__FlashStringHelper*)(x)
 
 bool readMemory(uint8_t deviceaddress, uint8_t eeaddress, byte* rdata, uint8_t num);
 bool writeMemory(uint8_t deviceaddress, uint8_t eeaddress, byte* wdata);
@@ -20,12 +21,13 @@ struct A1335State {
   byte rawData[16];
 };
 
+const uint8_t FLAGS_STRLEN = 10;
 
 
 bool readDeviceState(uint8_t deviceaddress, A1335State* state);
 bool checkDefaultSettings(A1335State* state);
 
-void SerialPrintFlags(uint16_t flags, char meanings[][3], uint8_t num);
+void SerialPrintFlags(uint16_t flags, char meanings[][FLAGS_STRLEN], uint8_t num);
 void SerialPrintAlignLeft(String s, uint16_t l);
 
 
@@ -38,12 +40,33 @@ uint8_t all_devices_num = 0;
 
 
 
-const char ANGLE_FLAGS[][3] PROGMEM = {
+
+const char ANGLE_FLAGS[][FLAGS_STRLEN] = {
   "NEW",
   "ERR"
 };
 
+const char STATUS_FLAGS[][FLAGS_STRLEN] = {
+  "ERR",
+  "NEW",
+  "Soft_Rst",
+  "PwON_Rst"
+};
 
+const char ERROR_FLAGS[][FLAGS_STRLEN] = {
+  "MagLow",
+  "MagHigh",
+  "UnderVolt",
+  "OverVolt",
+  "AngleLow",
+  "AngleHigh",
+  "ProcError",
+  "NoRunMode",
+  "(CRC_Err)",
+  "(SPI_Err)",
+  "(XOV)",
+  "XERR"
+};
 
 
 
