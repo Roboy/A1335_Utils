@@ -84,3 +84,12 @@ bool readDeviceState(uint8_t deviceaddress, A1335State* state){
 
   return true;
 }
+
+
+void SerialPrintFillLeft(String s, uint16_t l){
+  Serial.print(s);
+  l -= s.length();
+  for(; l > 0; l--){
+    Serial.print(' ');
+  }
+}

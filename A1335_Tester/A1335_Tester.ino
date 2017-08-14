@@ -23,22 +23,20 @@ void setup() {
 }
 
 
-byte r[2];
-bool checkDeviceAvailable(int addr){
-    return readMemory(addr, 32, r); // Read a register (fast)
-}
-
-void searchAddressSpace(){
-  byte r[2];
+bool searchAddressSpace(){
+  bool changed = false;
   all_devices_num = 0;
   for(uint8_t i=0; i < 128; i++){ // search all possible addresses
-    if(checkDeviceAvailable(i)){
-      all_devices_addr[all_devices_num] = i;
+    if(readDeviceState(i, &all_devices_state[all_devices_num])){
+      // If nothing changed, we will read the same addresses again
+      changed |= all_devices_state[all_devices_num].addr != i;
+      all_devices_state[all_devices_num].addr = i;
       all_devices_num++;
       if(all_devices_num >= all_devices_num_max)
-        return;
+        break;
     }
   }
+  return changed;
 }
 
 
@@ -57,15 +55,28 @@ void loop() {
   if(all_devices_num == 0){
     Serial.println(F("Scanning..."));
     searchAddressSpace();
-    device_list_displayed = false;
-    device_settings_read = false;
     if(all_devices_num == 0){
       delay(1000);
     }
   }
 
-  // Multi device connected
-  else if(device_addr > 127){
+  // device(s) connected
+  else{
+  const char TABLE_LINE[] PROGMEM = {"|-----------------------------|"};
+    
+    Serial.println(F("_____ All Devices found: ______"));
+    Serial.println(F("|  Address  | Def Settings OK |"));
+    Serial.println(TABLE_LINE);
+
+    for(uint8_t i = 0; i < all_devices_num; i++){
+      Serial.print("| ");
+      SerialPrintFillLeft(String(all_devices_state[i].address), 10);
+      Serial.print("| ");
+      SerialPrintFillLeft(all_devices_state[i].isOK ? "OK" : "NOT OK", 16);
+      Serial.println("|");
+    }
+    Serial.println(TABLE_LINE);
+    
     if(all_devices_num == 1){
       // Only one device => connect directly
       device_addr = all_devices_addr[0];
@@ -101,28 +112,6 @@ void loop() {
         readCommand(false);
         delay(1);
       }
-    }
-  }
-
-  // Single device connected
-  else{
-    if(checkDeviceAvailable(device_addr)){
-      // Device connected
-
-      if(!device_settings_read){
-        readDeviceSettings(device_addr);
-        device_settings_read = true;
-        displayDeviceProperties();
-        Serial.println(F("Waiting for input... (h for help)"));
-      }
-
-      readCommand(true);
-      delay(1);
-    }else{
-      device_addr = 255;
-      all_devices_num = 0;
-      Serial.println(F("Connection lost"));
-      Serial.println();
     }
   }
 }
