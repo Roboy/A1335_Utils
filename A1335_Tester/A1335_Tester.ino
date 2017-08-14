@@ -29,8 +29,8 @@ bool searchAddressSpace(){
   for(uint8_t i=0; i < 128; i++){ // search all possible addresses
     if(readDeviceState(i, &all_devices_state[all_devices_num])){
       // If nothing changed, we will read the same addresses again
-      changed |= all_devices_state[all_devices_num].addr != i;
-      all_devices_state[all_devices_num].addr = i;
+      changed |= all_devices_state[all_devices_num].address != i;
+      all_devices_state[all_devices_num].address = i;
       all_devices_num++;
       if(all_devices_num >= all_devices_num_max)
         break;
@@ -55,90 +55,54 @@ void loop() {
   if(all_devices_num == 0){
     Serial.println(F("Scanning..."));
     searchAddressSpace();
-    if(all_devices_num == 0){
-      delay(1000);
-    }
   }
 
   // device(s) connected
-  else{
-  const char TABLE_LINE[] PROGMEM = {"|-----------------------------|"};
-    
+  if(all_devices_num > 0){
+    const char TABLE_LINE[] PROGMEM = {"|-----------------------------|"};
+
+
+    // Print overview of all devices
     Serial.println(F("_____ All Devices found: ______"));
     Serial.println(F("|  Address  | Def Settings OK |"));
     Serial.println(TABLE_LINE);
 
     for(uint8_t i = 0; i < all_devices_num; i++){
       Serial.print("| ");
-      SerialPrintFillLeft(String(all_devices_state[i].address), 10);
+      SerialPrintAlignLeft(String(all_devices_state[i].address), 10);
       Serial.print("| ");
-      SerialPrintFillLeft(all_devices_state[i].isOK ? "OK" : "NOT OK", 16);
+      SerialPrintAlignLeft(all_devices_state[i].isOK ? "OK" : "NOT OK", 16);
       Serial.println("|");
     }
     Serial.println(TABLE_LINE);
-    
-    if(all_devices_num == 1){
-      // Only one device => connect directly
-      device_addr = all_devices_addr[0];
-      Serial.print(F("Device found at addr: "));
-      Serial.println(device_addr);
-    }else{
-      // Multiple devices => Enable list mode
-      for(uint8_t i = 0; i < all_devices_num; i++){
-        if(!checkDeviceAvailable(all_devices_addr[i])){
-          Serial.println(F("Connection lost to at least one device"));
-          Serial.println();
-          all_devices_num = 0;
-          break;
-        }
-      }
-      if(all_devices_num > 0){
-        if(!device_list_displayed){
-          device_list_displayed = true;
-          Serial.print(F("Multiple devices found: "));
-          Serial.println(all_devices_num);
-          Serial.println(F("On Addresses:"));
-          for(uint8_t i = 0; i < all_devices_num; i++){
-            if(i != 0){
-              Serial.print(',');
-            }
-            Serial.print(all_devices_addr[i]);
-          }
-          Serial.println();
-          Serial.println();
-          Serial.println(F("Waiting for input... (h for help)"));
-        }
-        
-        readCommand(false);
-        delay(1);
-      }
-    }
-  }
-}
-
-
-void readCommand(bool single){
-  while (Serial.available()) {
-      char c = Serial.read();
-      if(c == '\n'){
-        line = true;
-        break;
-      }
-      commandIn += c;
-  }
-  if(line){
-    line = false;
     Serial.println();
-    Serial.print(">  ");
-    Serial.println(commandIn);
+    Serial.println();
 
-    if(! (single ? parseSingleCommand(commandIn) : parseListCommand(commandIn))){
-      Serial.println(F("Unknown command"));
-      Serial.println(F("type h for help"));
+
+    // Pretty-print each device state
+    for(uint8_t i = 0; i < all_devices_num; i++){
+      A1335State s = all_devices_state[i];
+
+      Serial.print(F("___Sensor:  "));
+      Serial.print(s.address);
+      Serial.print(F("________"));
+      Serial.print(s.isOK ? "OK" : "NOT OK");
+      Serial.println(F("____"));
+      
+      Serial.print(F("    Angle:  "));
+      Serial.print(s.angle);
+      Serial.print(F("° ("));
+      SerialPrintFlags(s.angle_flags, ANGLE_FLAGS, 2);
+      Serial.print(F(")"));
+      
+      Serial.println();
+      Serial.println();
     }
-    
-    commandIn = "";
   }
+
+  
+  delay(1000);
 }
+
 
 

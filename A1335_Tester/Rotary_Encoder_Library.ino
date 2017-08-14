@@ -28,14 +28,14 @@ bool writeMemory(uint8_t deviceaddress, uint8_t eeaddress, byte* wdata)
   return true;
 }
 
-bool writeMemoryCheck(uint8_t deviceaddress,uint8_t eeaddress, byte* wdata)
+bool writeMemoryCheck(uint8_t deviceaddress, uint8_t eeaddress, byte* wdata)
 {
   if(!writeMemory(deviceaddress, eeaddress, wdata)){
     return false;
   }
   byte rdata[2];
   delay(30);
-  if(!readMemory(deviceaddress, eeaddress, rdata)){
+  if(!readMemory(deviceaddress, eeaddress, rdata, 2)){
     return false;
   }
   return (rdata[0] == wdata[0] && rdata[1] == wdata[1]);
@@ -66,7 +66,7 @@ bool readDeviceState(uint8_t deviceaddress, A1335State* state){
 
   state->isOK = checkDefaultSettings(state);
   
-  state->angle = ((state->rawData[0] & 0xf) << 8) | state->rawData[1];
+  state->angle = (float)((uint16_t)((state->rawData[0] & 0xf) << 8) | state->rawData[1]) * 360 / 4096 ;
   state->angle_flags = (state->rawData[0] >> 5) & 0b11;
   
   state->status_flags = state->rawData[2] & 0xf;
@@ -86,7 +86,20 @@ bool readDeviceState(uint8_t deviceaddress, A1335State* state){
 }
 
 
-void SerialPrintFillLeft(String s, uint16_t l){
+void SerialPrintFlags(uint16_t flags, char meanings[][3], uint8_t num){
+  bool first = true;
+  for(uint8_t i = 0; i < num; i++){
+    if(!first){
+      Serial.print(", ");
+      first = false;
+    }
+    if((flags << i) & 1){
+      Serial.print(meanings[i]);
+    }
+  }
+}
+
+void SerialPrintAlignLeft(String s, uint16_t l){
   Serial.print(s);
   l -= s.length();
   for(; l > 0; l--){
