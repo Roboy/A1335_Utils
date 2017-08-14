@@ -52,6 +52,7 @@ bool searchAddressSpace(){
 
 
 uint16_t ledTime;
+bool changed;
 void loop() {
   wdt_reset();
 
@@ -62,7 +63,8 @@ void loop() {
   if(all_devices_num == 0){
     Serial.println(F("Scanning..."));
   }
-  bool changed = searchAddressSpace();
+  changed = searchAddressSpace();
+  changed = true;
 
   // device(s) connected
   if(all_devices_num > 0){
@@ -130,10 +132,10 @@ void loop() {
         char buf[30];
         for(uint8_t i=0; i < 8; i++){
           // Register numbers
-          uint16_t reg = (i<<1) < num_registers
+          uint16_t reg = i < num_registers
                   ? start_register +(i<<1)
-                  : start_register2 +(i<<1)-num_registers; // (second half)
-          sprintf(buf, "0x%02x: %02x %02x", reg, s.rawData[i<<1], s.rawData[i<<1 +1]);
+                  : start_register2 +(i-num_registers)<<1; // (second half)
+          sprintf(buf, "0x%02x: %02x %02x", reg, s.rawData[i][0], s.rawData[i][1]);
           Serial.println(buf);
         }
         

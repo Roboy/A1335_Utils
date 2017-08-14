@@ -2,9 +2,9 @@
 
 
 const uint8_t start_register = 0x20;
-const uint8_t num_registers = 12;
+const uint8_t num_registers = 6;
 const uint8_t start_register2 = 0x34; // Error Mask registers
-const uint8_t num_registers2 = 4;
+const uint8_t num_registers2 = 2;
 
 /**
  * Content of the registers that should be on every chip

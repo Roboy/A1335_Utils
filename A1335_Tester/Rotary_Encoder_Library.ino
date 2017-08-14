@@ -48,9 +48,9 @@ bool writeMemoryCheck(uint8_t deviceaddress, uint8_t eeaddress, byte* wdata)
 
 bool checkDefaultSettings(A1335State* state){
   for(uint8_t i = 0; i < 8; i++){
-    if((state->rawData[i>>1] & expected_registers_mask[i][0]) != expected_registers[i][0])
+    if((state->rawData[i][0] & expected_registers_mask[i][0]) != expected_registers[i][0])
       return false;
-    if((state->rawData[i>>1|1] & expected_registers_mask[i][1]) != expected_registers[i][1])
+    if((state->rawData[i][1] & expected_registers_mask[i][1]) != expected_registers[i][1])
       return false;
   }
   return true;
@@ -58,29 +58,33 @@ bool checkDefaultSettings(A1335State* state){
 
 
 bool readDeviceState(uint8_t deviceaddress, A1335State* state){
-  
-  if(!readMemory(deviceaddress, start_register, state->rawData, num_registers)){
-    return false;
+
+  for(uint8_t i = 0; i < num_registers; i++){
+    if(!readMemory(deviceaddress, start_register+(i<<1), state->rawData[i], 2)){
+      return false;
+    }
   }
-  if(!readMemory(deviceaddress, start_register2, &state->rawData[num_registers], num_registers2)){
-    return false;
+  for(uint8_t i = 0; i < num_registers2; i++){
+    if(!readMemory(deviceaddress, start_register2+(i<<1), state->rawData[num_registers+i], 2)){
+      return false;
+    }
   }
 
   state->isOK = checkDefaultSettings(state);
   
-  state->angle = (float)((uint16_t)((state->rawData[0] & 0xf) << 8) | state->rawData[1]) * 360 / 4096 ;
-  state->angle_flags = (state->rawData[0] >> 5) & 0b11;
+  state->angle = (float)((uint16_t)((state->rawData[0][0] & 0xf) << 8) | state->rawData[0][1]) * 360 / 4096 ;
+  state->angle_flags = (state->rawData[0][0] >> 5) & 0b11;
   
-  state->status_flags = state->rawData[2] & 0xf;
+  state->status_flags = state->rawData[1][0] & 0xf;
   
-  state->err_flags = ((state->rawData[4] & 0xf) << 8) | state->rawData[5];
-  state->xerr_flags = ((state->rawData[6] & 0xf) << 8) | state->rawData[7];
+  state->err_flags = ((state->rawData[2][0] & 0xf) << 8) | state->rawData[2][1];
+  state->xerr_flags = ((state->rawData[3][0] & 0xf) << 8) | state->rawData[3][1];
   
   state->temp = 
-    (float)((uint16_t)((state->rawData[8] & 0xf) << 8) | state->rawData[9])
+    (float)((uint16_t)((state->rawData[4][0] & 0xf) << 8) | state->rawData[4][1])
      / 8.0 - 273.145; // 8th Kelvin to °C
   state->fieldStrength = 
-    (float)((uint16_t)((state->rawData[10] & 0xf) << 8) | state->rawData[11])
+    (float)((uint16_t)((state->rawData[5][0] & 0xf) << 8) | state->rawData[5][1])
      / 10.0; // Gauss to milliTesla
   
 

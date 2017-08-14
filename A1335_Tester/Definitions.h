@@ -18,7 +18,7 @@ struct A1335State {
   float temp; // in °C
   float fieldStrength; // in mT
 
-  byte rawData[16];
+  byte rawData[8][2];
 };
 
 const uint8_t FLAGS_STRLEN = 10;
