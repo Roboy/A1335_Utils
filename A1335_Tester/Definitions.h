@@ -68,6 +68,21 @@ const char ERROR_FLAGS[][FLAGS_STRLEN] = {
   "XERR"
 };
 
+const char XERROR_FLAGS[][FLAGS_STRLEN] = {
+  "SelfTest",
+  "MemAddr",
+  "Execute",
+  "ResetCond",
+  "WTD_Timer",
+  "WTD_Halt",
+  "EEPR_Hard",
+  "SRAM_Hard",
+  "Temp_Err",
+  "AngleWarn",
+  "EEPR_Soft",
+  "SRAM_Soft"
+};
+
 
 
 

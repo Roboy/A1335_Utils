@@ -115,7 +115,11 @@ void loop() {
         Serial.println();
         
         Serial.print(F("   Errors:  "));
-        SerialPrintFlags(s.err_flags, ERROR_FLAGS, 2);
+        SerialPrintFlags(s.err_flags, ERROR_FLAGS, 12);
+        Serial.println();
+        
+        Serial.print(F("  XErrors:  "));
+        SerialPrintFlags(s.xerr_flags, XERROR_FLAGS, 12);
         Serial.println();
 
         Serial.print(F("     Temp:  "));
