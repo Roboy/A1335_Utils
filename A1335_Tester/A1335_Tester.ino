@@ -11,6 +11,8 @@ void setup() {
   Serial.begin(115200);
 
   pinMode(LED_PIN, OUTPUT);
+  pinMode(52, OUTPUT);
+  digitalWrite(52, LOW);
 
   // Reset the Arduino if it hangs for more than 2s
   wdt_enable(WDTO_2S);

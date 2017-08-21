@@ -63,7 +63,7 @@ const char ERROR_FLAGS[][FLAGS_STRLEN] = {
   "ProcError",
   "NoRunMode",
   "(CRC_Err)",
-  "(SPI_Err)",
+  "(INTFErr)",
   "(XOV)",
   "XERR"
 };
