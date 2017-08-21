@@ -42,7 +42,13 @@ bool writeMemoryCheck(uint8_t deviceaddress, uint8_t eeaddress, byte* wdata)
 
 
 
-
+bool clearStatusRegisters(uint8_t deviceaddress){
+  byte data[] = {
+    0b00000111, // Clear STA, ERR & XERR
+    0x46        // Keycode to activate this command
+  };
+  return writeMemory(deviceaddress, 0x1E, data);
+}
 
 
 

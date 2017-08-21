@@ -64,12 +64,11 @@ void loop() {
     Serial.println(F("Scanning..."));
   }
   changed = searchAddressSpace();
-  changed = true;
+  //changed = true;
 
   // device(s) connected
   if(all_devices_num > 0){
-    const char TABLE_LINE[] PROGMEM = {"|-----------------------------|"};
-
+    const char TABLE_LINE[] = {"|-----------------------------|"};
 
     if(changed){
       // Print overview of all devices
@@ -92,6 +91,7 @@ void loop() {
 
 
     bool allOK = true;
+    bool clearedFlags = false;
     for(uint8_t i = 0; i < all_devices_num; i++){
       A1335State s = all_devices_state[i];
       allOK &= s.isOK;
@@ -142,10 +142,22 @@ void loop() {
           sprintf(buf, "0x%02x: %02x %02x", reg, s.rawData[i][0], s.rawData[i][1]);
           Serial.println(buf);
         }
+
+        if(all_devices_state[i].status_flags & 0b1000){
+          // Power-On Reset Flag
+          clearStatusRegisters(all_devices_state[i].address);
+          clearedFlags = true;
+          Serial.println(F("Cleared Flags because of Reset Condition; Rescanning..."));
+        }
         
         Serial.println();
         Serial.println();
       }
+    }
+
+
+    if(clearedFlags){
+      all_devices_num = 0; // make sure a rescan will be displayed
     }
 
     ledTime = allOK ? 1000 : 500;
