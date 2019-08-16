@@ -2,6 +2,7 @@
 #include "Definitions.h"
 #include <ESP8266WiFi.h>
 #include <PubSubClient.h>
+#include <Servo.h>
 
 
 const char* ssid = "roboy";
@@ -16,6 +17,8 @@ double msg = 0.0;
 int value = 0;
 
 A1335State state;
+
+Servo myservo;
 
 
 void setup_wifi() {
@@ -39,25 +42,24 @@ void setup_wifi() {
   Serial.println("WiFi connected");
   Serial.println("IP address: ");
   Serial.println(WiFi.localIP());
+
+  myservo.attach(13);
 }
 
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
   Serial.print(topic);
   Serial.print("] ");
+  String str;
   for (int i = 0; i < length; i++) {
+    str += (char)payload[i];
     Serial.print((char)payload[i]);
   }
   Serial.println();
 
-  // Switch on the LED if an 1 was received as first character
-  if ((char)payload[0] == '1') {
-    digitalWrite(BUILTIN_LED, LOW);   // Turn the LED on (Note that LOW is the voltage level
-    // but actually the LED is on; this is because
-    // it is active low on the ESP-01)
-  } else {
-    digitalWrite(BUILTIN_LED, HIGH);  // Turn the LED off by making the voltage HIGH
-  }
+  myservo.write(str.toInt());              // tell servo to go to position in variable 'pos'
+  delay(100);  
+
 
 }
 
@@ -72,9 +74,10 @@ void reconnect() {
     if (client.connect(clientId.c_str())) {
       Serial.println("connected");
       // Once connected, publish an announcement...
-      client.publish("outTopic", "hello world");
+//      readDeviceState(0xF, &state);
+//      client.publish("angle", String(state.angle).c_str());
       // ... and resubscribe
-      client.subscribe("inTopic");
+      client.subscribe("servo");
     } else {
       Serial.print("failed, rc=");
       Serial.print(client.state());
@@ -99,6 +102,7 @@ void setup() {
 
 
 void loop() {
+  int pos;
 
   if (!client.connected()) {
     reconnect();
@@ -114,12 +118,13 @@ void loop() {
     lastMsg = now;
     ++value;
     msg = state.angle;
-//    snprintf (msg, 50, "angle value: #%ld", state.angle);
     Serial.print("Publish message: ");
     Serial.println(msg);
-    client.publish("outTopic", String(msg).c_str());
+    client.publish("angle", String(msg).c_str());
+    
+
+  
   }
   
 
-//  delay(1000);
 }
